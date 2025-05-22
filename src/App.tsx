@@ -1,4 +1,4 @@
-import { Assistant } from './assistant'
+import { Assistant } from "./Assistant"
 
 function App() {
   return (
