@@ -6,7 +6,6 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import { useChatRuntime } from "@assistant-ui/react-ai-sdk";
 import McpContextProviderComponent from "./winodw.MCP/McpContextProviderComponent";
-import { Button } from "./components/ui/button";
 
 export const Assistant = () => {
   const runtime = useChatRuntime({
@@ -16,9 +15,6 @@ export const Assistant = () => {
   return (
     <AssistantRuntimeProvider runtime={runtime}>
       <McpContextProviderComponent>
-        <Button onClick={() => {
-          
-        }}>Hello </Button>
         <SidebarProvider>
           <AppSidebar />
           <SidebarInset>

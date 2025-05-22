@@ -96,73 +96,22 @@ export default function useMcpContextProvider(mcpClientNamespace = 'mcp'): McpCo
 
         const toolsForAssistant: Record<string, AssistantTool> = {};
         assistantToolsList.forEach(t => {
-            // makeAssistantTool(t);
             toolsForAssistant[t.name] = t;
         });
 
-        // --- Prepare System Instructions from MCP Resources (example) ---
-        // This is a basic example; you might want more sophisticated logic.
         let systemInstructionsFromMcp = "";
         if (mcpClient.serverCapabilities?.resources && mcpResources.length > 0) {
-            systemInstructionsFromMcp += "\nThe following context from the current page is available:\n";
-            mcpResources.forEach(res => {
-                systemInstructionsFromMcp += `- ${res.name} (uri: ${res.uri}): ${res.description || 'No description.'}\n`;
-                // You could even pre-fetch some key resources here if small, but be careful.
-                // e.g. if (res.uri === "page://title") {
-                //    client.readResource(res.uri).then(data => systemInstructionsFromMcp += `Current Title: ${data.contents[0]?.text}\n`);
-                // }
-            });
              systemInstructionsFromMcp += "You can use the 'readResource' tool to get the content of these resources if needed, or I will provide them if I think they are relevant.\n";
         }
 
-        // --- Register Context Provider ---
         const unregister = assistantRuntime.registerModelContextProvider({
-            // Unique ID for this provider
-            id: `mcp-window-provider-${mcpClientNamespace}`,
-            // Order of execution (lower numbers run first) - adjust as needed
-            order: 100,
             getModelContext: () => {
-                // Potentially re-fetch resources/tools if you expect them to change
-                // and don't rely solely on notifications for critical updates.
-                // For now, we use the state.
-
-                // Construct system message. You might combine MCP server instructions
-                // with resource list.
                 let systemMessage = "";
-                if (mcpClient.serverInfo?.name) {
-                    // Note: client.getInstructions() from official MCP returns server-provided instructions.
-                    // We don't have a direct equivalent in mcp-window-types yet,
-                    // but serverInfo could be expanded or a new method added.
-                    // systemMessage += `Interacting with MCP Provider: ${mcpClient.serverInfo.name}\n`;
-                }
                 systemMessage += systemInstructionsFromMcp;
-
-
-                // Create a dedicated "readResource" tool if resources are available
-                // const allToolsForAssistant = { ...toolsForAssistant };
-                // if (mcpClient.serverCapabilities?.resources && mcpResources.length > 0) {
-                //     allToolsForAssistant['readMcpResource'] = assistantToolHelper({
-                //         name: 'readMcpResource',
-                //         description: 'Reads the content of an available MCP resource from the current page.',
-                //         parameters: z.object({
-                //             uri: z.string().describe(`The URI of the resource to read. Available URIs: ${mcpResources.map(r => r.uri).join(', ')}`)
-                //         }),
-                //         execute: async ({ uri }) => {
-                //             try {
-                //                 const res = await mcpClient.readResource(uri);
-                //                 // Decide how to format this for the assistant
-                //                 const textContent = res.contents.filter(c => c.text).map(c => c.text).join("\n\n");
-                //                 return { content: textContent || "Resource read, but no text content found." };
-                //             } catch (e: any) {
-                //                 return { error: `Failed to read resource ${uri}: ${e.message}` };
-                //             }
-                //         }
-                //     });
-                // }
 
                 console.log({toolsForAssistant})
                 return {
-                    system: systemMessage.trim() || undefined, // Ensure it's undefined if empty
+                    system: systemMessage.trim() || "TOOLS:",
                     tools: toolsForAssistant,
                 };
             },
