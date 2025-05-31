@@ -21,15 +21,18 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "baseUrl": ".",
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@modelcontextprotocol/sdk/*": [
+        "../typescript-sdk/dist/esm/*"
       ]
-    }
+    },
+    "types": ["./worker-configuration.d.ts"]
   },
   "include": [
     "src"

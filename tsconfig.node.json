@@ -25,7 +25,11 @@
       "@/*": [
         "./src/*"
       ]
-    }
+    },
+    "types": [
+      "./worker-configuration.d.ts",
+      "@types/node"
+    ]
   },
-  "include": ["vite.config.ts"]
+  "include": ["vite.config.ts", "drizzle.config.ts"]
 }

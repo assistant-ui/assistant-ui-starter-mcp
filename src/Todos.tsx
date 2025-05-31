@@ -2,87 +2,59 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Shadcn Card
 import { Checkbox } from "@/components/ui/checkbox"; // Shadcn Checkbox
 import { Skeleton } from "@/components/ui/skeleton"; // Shadcn Skeleton
-import { hc } from 'hono/client';
+import { useLiveQuery } from '@tanstack/react-db';
 import { Terminal } from "lucide-react"; // Icon for Alert
-import { useEffect, useState } from 'react';
-import type { Todo } from "worker/db/schema";
-import type { AppType } from '../worker';
+import { useTodoSortParams } from "./hooks/useTodoSortParams";
+import { userId } from "./lib/utils";
+import { userTodoCollection } from "./services/collections";
 
-const client = hc<AppType>(location.origin);
 
 export default function Todos() {
-    const [todos, setTodos] = useState<Todo[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { sortParams, getSortDescription } = useTodoSortParams();
+    const { data: todos = [] } = useLiveQuery((query) => {
+        let baseQuery = query.from({ userTodoCollection });
+        
+        // if (sortParams.completed !== undefined) {
+        //     baseQuery = baseQuery.where('@userTodoCollection.completed', '=', sortParams.completed);
+        // }
+        
+        if (sortParams.search) {
+            baseQuery = baseQuery.where('@userTodoCollection.text', 'like', `%${sortParams.search}%`);
+        }
+        
+        const sortOrder = sortParams.sortOrder === 'desc' ? 'desc' : 'asc';
+        baseQuery = baseQuery.orderBy({ [`@userTodoCollection.${sortParams.sortBy}`]: sortOrder } as any);
+        
+        return baseQuery
+            .keyBy('@id')
+            .select(
+                '@userTodoCollection.id',
+                '@userTodoCollection.text', 
+                '@userTodoCollection.completed',
+                '@userTodoCollection.userId',
+                '@userTodoCollection.created_at',
+                '@userTodoCollection.updated_at'
+            );
+    }, [userTodoCollection, sortParams]);
 
-    // TODO: Replace this with a dynamic userId from auth context or props
-    const placeholderUserId = "test-user-123"; // Example User ID
+    const isLoading = false;
+    const error: Error | null = null;
+    const isMutating = false;
 
-    useEffect(() => {
-        const fetchTodos = async () => {
-            if (!placeholderUserId) {
-                setError("User ID is not available.");
-                setLoading(false);
-                return;
-            }
-            try {
-                setLoading(true);
-                setError(null);
-                const migrationRes = await client.api.migrate.$get({}).then(a => a.json())
-
-                if(!migrationRes.success){
-                    throw new Error(migrationRes.message)
-                }
-                // Updated API call to fetch todos for a specific user
-                const res = await client.api.users[':userId'].todos.$get({
-                    param: { userId: placeholderUserId },
-                });
-
-                if (!res.ok) {
-                    if (res.status === 404) {
-                        const errorData = await res.json();
-                        if (errorData.error === "User not found") {
-                             // User doesn't exist, so they won't have any todos.
-                             // You might want to prompt to create a user or handle this differently.
-                            setTodos([]);
-                            setError(null); // Or set a specific message like "User not found, create one?"
-                            console.warn(`User with ID ${placeholderUserId} not found. Displaying empty todo list.`);
-                        } else {
-                            throw new Error(`Failed to fetch todos: ${errorData.error || res.statusText} (${res.status})`);
-                        }
-                    } else {
-                        throw new Error(`Failed to fetch todos: ${res.statusText} (${res.status})`);
-                    }
-                } else {
-                    const data = (await res.json()) as Todo[]; // Ensure data is typed as Todo[]
-                    setTodos(data);
-                }
-            } catch (err) {
-                const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
-                setError(errorMessage);
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchTodos();
-    }, [placeholderUserId]); // Re-run effect if placeholderUserId changes (though it's constant here)
-
-    if (loading) {
+    if (isLoading) {
         return (
-            <div className="w-1/2 h-full p-4">
+            <div className="h-full p-4">
                 <Card>
                     <CardHeader>
                         <CardTitle>
-                            <Skeleton className="h-6 w-1/4" />
+                            <Skeleton className="h-5 w-1/2" />
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         {[...Array(3)].map((_, i) => (
-                            <div key={i} className="flex items-center space-x-3 p-3">
-                                <Skeleton className="h-5 w-5 rounded" />
-                                <Skeleton className="h-5 w-full" />
+                            <div key={i} className="flex items-center space-x-3 p-2">
+                                <Skeleton className="h-4 w-4 rounded" />
+                                <Skeleton className="h-4 w-full" />
                             </div>
                         ))}
                     </CardContent>
@@ -93,36 +65,46 @@ export default function Todos() {
 
     if (error) {
         return (
-            <div className="w-1/2 h-full p-4 flex items-center justify-center">
-                <Alert variant="destructive" className="w-full max-w-md">
+            <div className="h-full p-4 flex items-center justify-center">
+                <Alert variant="destructive" className="w-full">
                     <Terminal className="h-4 w-4" />
                     <AlertTitle>Error Fetching Todos</AlertTitle>
-                    <AlertDescription>
-                        {error}
+                    <AlertDescription className="text-xs">
+                        {(error as Error)?.message || "An unexpected error occurred"}
                     </AlertDescription>
                 </Alert>
             </div>
         );
     }
 
+
     return (
-        <div className="w-1/2 h-full p-4 overflow-auto">
+        <div className="h-full p-4 overflow-auto">
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-2xl font-semibold">
-                        Todos for {placeholderUserId}
+                    <CardTitle className="text-xl font-semibold flex items-center gap-2">
+                        ⚡ Todos
+                        {isMutating && (
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                        )}
                     </CardTitle>
+                    <p className="text-xs text-muted-foreground">
+                        {userId}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                        Sort: {getSortDescription()}
+                    </p>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
                     {todos.length === 0 ? (
-                        <p className="text-gray-500">No todos yet. Great job!</p>
+                        <p className="text-gray-500 text-sm">No todos yet. Great job!</p>
                     ) : (
                         <ul className="space-y-3">
                             {todos.map((todo, index) => (
                                 <li
                                     key={todo.id}
                                     className={`
-                                        flex items-center space-x-3 p-3 rounded-lg border
+                                        flex items-center space-x-3 p-2 rounded-lg border
                                         bg-card text-card-foreground shadow-sm
                                         transition-all duration-300 ease-out
                                         hover:shadow-md hover:bg-muted/50
@@ -133,13 +115,13 @@ export default function Todos() {
                                         id={`todo-${todo.id}`}
                                         checked={todo.completed}
                                         disabled // Read-only
-                                        className="cursor-not-allowed"
+                                        className="cursor-not-allowed flex-shrink-0"
                                     />
                                     <label
                                         htmlFor={`todo-${todo.id}`}
-                                        className={`flex-grow text-sm font-medium leading-none ${
+                                        className={`flex-grow text-xs font-medium leading-tight ${
                                             todo.completed ? 'line-through text-muted-foreground' : ''
-                                        } cursor-not-allowed`}
+                                        } cursor-not-allowed break-words`}
                                     >
                                         {todo.text}
                                     </label>
@@ -152,22 +134,3 @@ export default function Todos() {
         </div>
     );
 }
-
-// Add this to your global CSS (e.g., src/index.css or src/App.css)
-/*
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fadeInUp {
-  animation: fadeInUp 0.5s ease-out forwards;
-  opacity: 0; // Start with opacity 0 to ensure animation runs correctly
-}
-*/

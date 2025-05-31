@@ -7,6 +7,9 @@
 	"name": "my-react-app",
 	"main": "worker/index.ts",
 	"compatibility_date": "2025-05-22",
+	"compatibility_flags": [
+		"nodejs_compat"
+	  ],
 	"assets": {
 		"not_found_handling": "single-page-application",
 		"directory": "public"

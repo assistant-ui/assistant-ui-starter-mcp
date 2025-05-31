@@ -13,7 +13,8 @@
 	],
 	"compilerOptions": {
 		"types": [
-			"./worker-configuration.d.ts"
+			"./worker-configuration.d.ts",
+			"@types/node"
 		],
 		
 	}
