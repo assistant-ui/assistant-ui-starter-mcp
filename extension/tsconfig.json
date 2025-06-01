@@ -1,0 +1,17 @@
+{
+  "extends": "./.wxt/tsconfig.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "exactOptionalPropertyTypes": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "types": ["./.wxt/wxt.d.ts", "@types/chrome"]
+  },
+  "exclude": []
+}
