@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+
+# Build outputs
+dist/
+build/
+.turbo/
+.cache/
+*.tsbuildinfo
+
+# Generated files
+*.gen.ts
+routeTree.gen.ts
+
+# Extension specific
+extension/.wxt/
+extension/dist/
+
+# Web specific
+web/dist/
+web/.wrangler/
+web/worker/db/migrations/
+
+# Misc
+coverage/
+.env*
+*.log
+.DS_Store
