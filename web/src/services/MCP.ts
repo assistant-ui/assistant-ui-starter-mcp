@@ -1,7 +1,7 @@
-import { BrowserServerTransport } from '@modelcontextprotocol/sdk/server/browser/browser';
+import { BrowserServerTransport } from '@b-mcp/transports';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { userId } from '@/lib/utils.ts';
+import { userId } from '../lib/utils.ts';
 import type { Todo } from '../../worker/db/schema.ts';
 import {
   getErrorMessage,

@@ -24,6 +24,8 @@ export default defineConfig({
       'webNavigation',
       'scripting',
       'offscreen',
+      'activeTab',
+      'scripting'
     ],
     content_security_policy: {
       extension_pages:

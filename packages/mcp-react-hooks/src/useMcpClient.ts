@@ -1,14 +1,14 @@
-import { useCallback, useEffect, useState } from 'react';
 import {
-  BrowserClientTransport,
-  type ExtensionClientTransport,
+    BrowserClientTransport,
+    type ExtensionClientTransport,
 } from '@b-mcp/transports';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import type {
-  Tool as McpTool,
-  Resource,
-  ServerCapabilities,
+    Tool as McpTool,
+    Resource,
+    ServerCapabilities,
 } from '@modelcontextprotocol/sdk/types.js';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export interface UseMcpClientOptions {
   clientName?: string;
@@ -28,8 +28,14 @@ export interface UseMcpClientResult {
 export function useMcpClient({
   clientName = 'MyMcpClient',
   clientVersion = '0.1.0',
-  transport = new BrowserClientTransport(),
+  transport: providedTransport,
 }: UseMcpClientOptions = {}): UseMcpClientResult {
+  // Memoize the transport to ensure it's only created once
+  const transport = useMemo(
+    () => providedTransport || new BrowserClientTransport(),
+    [] // Empty deps array ensures this is only created once
+  );
+
   const [mcpClient, setMcpClient] = useState<Client | null>(null);
   const [capabilities, setCapabilities] = useState<ServerCapabilities | null>(
     null
@@ -90,7 +96,7 @@ export function useMcpClient({
         if (!signal.aborted) setIsLoading(false);
       }
     },
-    [mcpClient, clientName, clientVersion]
+    [mcpClient, clientName, clientVersion, transport]
   );
 
   useEffect(() => {
@@ -98,6 +104,14 @@ export function useMcpClient({
     fetchInitialData(ac.signal);
     return () => ac.abort();
   }, [fetchInitialData]);
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      // Disconnect the client when the component unmounts
+      mcpClient?.close().catch(console.error);
+    };
+  }, [mcpClient]);
 
   return { mcpClient, capabilities, resources, tools, isLoading, error };
 }

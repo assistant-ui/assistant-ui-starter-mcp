@@ -195,6 +195,8 @@ export class BrowserServerTransport implements Transport {
   private _globalNamespace: string;
   private _eventStore?: InMemoryEventStore;
   private _enableEventStore: boolean;
+  // Map request IDs to client IDs for proper routing
+  private _requestToClient: Map<RequestId, string> = new Map();
 
   onclose?: () => void;
   onerror?: (error: Error) => void;
@@ -281,6 +283,14 @@ export class BrowserServerTransport implements Transport {
         if (client) {
           client.port.close();
           this._clients.delete(clientId);
+          
+          // Clean up request mappings for this client
+          for (const [requestId, mappedClientId] of this._requestToClient.entries()) {
+            if (mappedClientId === clientId) {
+              this._requestToClient.delete(requestId);
+            }
+          }
+          
           // Note: We keep events for disconnected clients for resumability
         }
       },
@@ -335,6 +345,10 @@ export class BrowserServerTransport implements Transport {
           'method' in message
         ) {
           connection.requestIds.add(message.id);
+          this._requestToClient.set(message.id, clientInstanceId);
+          console.log(
+            `BrowserServerTransport: Client ${clientInstanceId} sent request with ID ${message.id}`
+          );
         }
 
         const isInitReq = isInitializeRequest(message);
@@ -414,20 +428,63 @@ export class BrowserServerTransport implements Transport {
       throw new Error('BrowserServerTransport not started');
     }
 
+    console.log(
+      'BrowserServerTransport.send called with:',
+      'message:', message,
+      'options:', options
+    );
+
     let targetConnections: ClientConnection[] = [];
 
     // Determine target client(s)
     if (options?.relatedRequestId) {
-      // Find client that made this request
-      for (const [_, connection] of this._clients) {
-        if (connection.requestIds.has(options.relatedRequestId)) {
+      // Find client that made this request using our mapping
+      console.log(
+        `BrowserServerTransport: Looking for client with request ID ${options.relatedRequestId}`
+      );
+      
+      const clientId = this._requestToClient.get(options.relatedRequestId);
+      if (clientId) {
+        const connection = this._clients.get(clientId);
+        if (connection) {
+          console.log(
+            `BrowserServerTransport: Found client ${clientId} for request ${options.relatedRequestId} via mapping`
+          );
           targetConnections = [connection];
-          // Clean up request ID if this is a response
+          
+          // Clean up mappings if this is a response
           if (isJSONRPCResponse(message) || isJSONRPCError(message)) {
+            this._requestToClient.delete(options.relatedRequestId);
             connection.requestIds.delete(options.relatedRequestId);
           }
-          break;
         }
+      }
+      
+      // Fallback to the old method if mapping didn't work
+      if (targetConnections.length === 0) {
+        for (const [clientId, connection] of this._clients) {
+          console.log(
+            `BrowserServerTransport: Checking client ${clientId}, has request IDs:`,
+            Array.from(connection.requestIds)
+          );
+          if (connection.requestIds.has(options.relatedRequestId)) {
+            console.log(
+              `BrowserServerTransport: Found client ${clientId} for request ${options.relatedRequestId} via fallback`
+            );
+            targetConnections = [connection];
+            // Clean up request ID if this is a response
+            if (isJSONRPCResponse(message) || isJSONRPCError(message)) {
+              connection.requestIds.delete(options.relatedRequestId);
+            }
+            break;
+          }
+        }
+      }
+      
+      if (targetConnections.length === 0) {
+        console.warn(
+          `BrowserServerTransport: No client found for request ID ${options.relatedRequestId}`
+        );
       }
     } else if (options?.targetClientId) {
       const connection = this._clients.get(options.targetClientId);
@@ -436,6 +493,7 @@ export class BrowserServerTransport implements Transport {
       }
     } else {
       // Broadcast to all initialized clients
+      console.log('BrowserServerTransport: Broadcasting to all initialized clients');
       targetConnections = Array.from(this._clients.values()).filter(
         (c) => c.initialized
       );
@@ -446,7 +504,12 @@ export class BrowserServerTransport implements Transport {
       return;
     }
 
+    console.log(
+      `BrowserServerTransport: Sending message to ${targetConnections.length} client(s):`
+    );
     for (const connection of targetConnections) {
+      console.log(`  - Client: ${connection.clientInstanceId}`);
+      
       // Store event if event store is enabled
       let eventId: EventId | undefined;
       if (this._eventStore) {

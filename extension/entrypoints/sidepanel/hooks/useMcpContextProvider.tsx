@@ -1,13 +1,15 @@
 // src/hooks/useMcpContextProvider.tsx
-import { useEffect, useMemo, useRef } from 'react';
 import { tool, useAssistantRuntime } from '@assistant-ui/react';
-import { useMcpClient } from '@b-mcp/mcp-react-hooks';
+import { useExtensionTransport, useMcpClient } from '@b-mcp/mcp-react-hooks';
 import type { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import type {
   Tool as McpTool,
   Resource,
   ServerCapabilities,
 } from '@modelcontextprotocol/sdk/types.js';
+import { useEffect, useMemo, useRef } from 'react';
+
+type JSONSchema7 = any;
 
 function mcpToolToJSONSchema(inputSchema: {
   type: 'object';
@@ -37,6 +39,8 @@ interface McpContext {
 }
 
 export default function useMcpContextProvider(): McpContext {
+    const transport = useExtensionTransport();
+
   const runtime = useAssistantRuntime();
   const {
     mcpClient,
@@ -45,7 +49,11 @@ export default function useMcpContextProvider(): McpContext {
     tools: mcpTools,
     isLoading,
     error,
-  } = useMcpClient({ clientName: 'MyMcpClient', clientVersion: '0.1.0' });
+  } = useMcpClient({
+    clientName: 'MyMcpClient',
+    clientVersion: '0.1.0',
+    transport: transport,
+  });
 
   const registeredToolNamesRef = useRef<Set<string>>(new Set());
 
@@ -54,9 +62,10 @@ export default function useMcpContextProvider(): McpContext {
     return mcpTools.map((mcpT) => ({
       name: mcpT.name,
       assistantTool: tool({
+        // @ts-expect-error TODO: fix type
         type: 'frontend',
         description: mcpT.description,
-        parameters: mcpToolToJSONSchema(mcpT.inputSchema),
+        parameters: mcpToolToJSONSchema(mcpT.inputSchema as any),
         execute: async (args: Record<string, unknown>) => {
           if (!mcpClient)
             throw new Error(`Tool ${mcpT.name}: MCP client not available`);
@@ -73,7 +82,7 @@ export default function useMcpContextProvider(): McpContext {
     }));
   }, [mcpClient, mcpTools]);
 
-  console.log({ assistantTools });
+  // console.log({ assistantTools });
 
   useEffect(() => {
     if (!mcpClient || !runtime) return;

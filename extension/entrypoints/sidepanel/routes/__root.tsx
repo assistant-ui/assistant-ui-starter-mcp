@@ -1,12 +1,10 @@
 import * as React from 'react';
 import { useMemo, useState } from 'react';
+import { AssistantRuntimeProvider } from '@assistant-ui/react';
+import { useChatRuntime } from '@assistant-ui/react-ai-sdk';
+import { ExtensionTransportProvider } from '@b-mcp/mcp-react-hooks';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  createRootRoute,
-  createRootRouteWithContext,
-  Link,
-  Outlet,
-} from '@tanstack/react-router';
+import { createRootRouteWithContext, Link } from '@tanstack/react-router';
 import {
   AlertCircle,
   Book,
@@ -15,10 +13,8 @@ import {
   ChevronRight,
   FileQuestion,
   FileText,
-  List,
   MessageSquare,
   Play,
-  Plus,
   Server,
   Terminal,
   Wrench,
@@ -58,6 +54,8 @@ import { Skeleton } from '../components/ui/skeleton';
 import { Textarea } from '../components/ui/textarea';
 import useMcpContextProvider from '../hooks/useMcpContextProvider';
 
+const port = chrome.runtime.connect({ name: 'extensionUI' });
+
 export const Route = createRootRouteWithContext<any>()({
   component: RootComponent,
   notFoundComponent: () => (
@@ -91,35 +89,40 @@ export const Route = createRootRouteWithContext<any>()({
 });
 
 function RootComponent() {
+  const runtime = useChatRuntime({
+    api: '/api/chat',
+  });
   return (
-    <React.Fragment>
-      <div className="flex flex-col h-screen">
-        <header className="border-b p-4">
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <Book className="h-5 w-5" />
-            Jargon Dictionary
-          </h1>
-        </header>
+    <ExtensionTransportProvider port={port} clientInstanceId="extensionUI">
+      <AssistantRuntimeProvider runtime={runtime}>
+        <div className="flex flex-col h-screen">
+          <header className="border-b p-4">
+            <h1 className="text-xl font-bold flex items-center gap-2">
+              <Book className="h-5 w-5" />
+              Jargon Dictionary
+            </h1>
+          </header>
 
-        <main className="flex-1 overflow-auto">
-          <Outlet />
-        </main>
+          <main className="flex-1 overflow-auto">
+            <McpServer />
+          </main>
 
-        <nav className="border-t p-2">
-          <div className="flex justify-around">
-            <Link
-              to="/chat"
-              className="flex flex-col items-center p-2 hover:bg-gray-100 rounded"
-              activeProps={{ className: 'bg-gray-100' }}
-            >
-              <MessageSquare className="h-5 w-5" />
-              <span className="text-xs mt-1">Chat</span>
-            </Link>
-          </div>
-        </nav>
-      </div>
-      <Toaster />
-    </React.Fragment>
+          <nav className="border-t p-2">
+            <div className="flex justify-around">
+              <Link
+                to="/chat"
+                className="flex flex-col items-center p-2 hover:bg-gray-100 rounded"
+                activeProps={{ className: 'bg-gray-100' }}
+              >
+                <MessageSquare className="h-5 w-5" />
+                <span className="text-xs mt-1">Chat</span>
+              </Link>
+            </div>
+          </nav>
+        </div>
+        <Toaster />
+      </AssistantRuntimeProvider>
+    </ExtensionTransportProvider>
   );
 }
 
@@ -200,7 +203,7 @@ function formatMcpError(error: any): {
   };
 }
 
-export default function McpServer() {
+function McpServer() {
   const { mcpClient, capabilities, isLoading, error, resources, mcpTools } =
     useMcpContextProvider();
 
@@ -385,6 +388,7 @@ export default function McpServer() {
 
   return (
     <div className="h-full overflow-auto space-y-3 p-2">
+      {/* <ConnectionStatus detailed={true}/> */}
       {/* Server Info */}
       <Card className="p-3">
         <div className="flex items-center gap-2 mb-2">

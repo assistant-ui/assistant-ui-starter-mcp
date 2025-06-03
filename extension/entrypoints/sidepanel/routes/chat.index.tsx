@@ -8,13 +8,9 @@ import { ThreadList } from '@/entrypoints/sidepanel/components/assistant-ui/thre
 import { Button } from '@/entrypoints/sidepanel/components/ui/button';
 
 const Chat = () => {
-  const runtime = useChatRuntime({
-    api: '/api/chat',
-  });
-  const [isThreadListCollapsed, setIsThreadListCollapsed] = useState(false);
+  const [isThreadListCollapsed, setIsThreadListCollapsed] = useState(true);
 
   return (
-    <AssistantRuntimeProvider runtime={runtime}>
       <div
         className={`grid h-dvh gap-x-2 px-4 py-4 ${isThreadListCollapsed ? 'grid-cols-[auto_1fr]' : 'grid-cols-[200px_1fr]'}`}
       >
@@ -40,7 +36,6 @@ const Chat = () => {
         </div>
         <Thread />
       </div>
-    </AssistantRuntimeProvider>
   );
 };
 

@@ -20,9 +20,6 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "baseUrl": ".",
-    "paths": {
-      "@modelcontextprotocol/sdk/*": ["../../typescript-sdk/dist/esm/*"]
-    }
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

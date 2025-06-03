@@ -59,7 +59,9 @@
     "tw-animate-css": "^1.2.8",
     "uuid": "^11.1.0",
     "zod": "^3",
-    "zod-to-json-schema": "^3.24.1"
+    "zod-to-json-schema": "^3.24.1",
+    "@b-mcp/transports": "workspace:*",
+    "@b-mcp/mcp-react-hooks": "workspace:*"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.2.3",

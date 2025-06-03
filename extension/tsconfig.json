@@ -11,7 +11,7 @@
     "paths": {
       "@/*": ["./*"]
     },
-    "types": ["./.wxt/wxt.d.ts", "@types/chrome"]
+    "types": ["./.wxt/wxt.d.ts", "@types/chrome", "@types/json-schema"]
   },
   "exclude": []
 }

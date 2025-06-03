@@ -3,14 +3,10 @@
   "version": "0.0.1",
   "description": "Transports for the in browser transport protocols",
   "type": "module",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "main": "./src/index.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
-      "types": "./dist/index.d.ts",
-      "default": "./src/index.ts"
+      "types": "./dist/index.d.ts"
     }
   },
   "files": [

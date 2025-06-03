@@ -22,7 +22,6 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@modelcontextprotocol/sdk/*": ["../../typescript-sdk/dist/esm/*"]
     },
     "types": ["./worker-configuration.d.ts"]
   },

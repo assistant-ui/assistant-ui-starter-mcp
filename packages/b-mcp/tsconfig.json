@@ -17,6 +17,7 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
+    "baseUrl": ".",
     "isolatedModules": true
   },
   "include": ["src"],

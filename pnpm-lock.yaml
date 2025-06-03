@@ -111,6 +111,9 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.12.1
         version: 1.12.1
+      '@radix-ui/react-checkbox':
+        specifier: ^1.3.2
+        version: 1.3.2(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-label':
         specifier: ^2.1.2
         version: 2.1.7(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -214,6 +217,9 @@ importers:
       '@types/chrome':
         specifier: ^0.0.280
         version: 0.0.280
+      '@types/json-schema':
+        specifier: ^7.0.15
+        version: 7.0.15
       '@types/react':
         specifier: ^19.0.12
         version: 19.1.6
@@ -294,6 +300,12 @@ importers:
       '@assistant-ui/react-markdown':
         specifier: ^0.10.2
         version: 0.10.4(@assistant-ui/react@0.10.19(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0)))(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@b-mcp/mcp-react-hooks':
+        specifier: workspace:*
+        version: link:../packages/mcp-react-hooks
+      '@b-mcp/transports':
+        specifier: workspace:*
+        version: link:../packages/b-mcp
       '@electric-sql/client':
         specifier: ^1.0.4
         version: 1.0.4

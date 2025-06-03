@@ -9,6 +9,7 @@ import type {
  * It bridges window.mcp.connect() <→> window.postMessage for EXT-CS / EXT-PAGE.
  */
 export default defineUnlistedScript(() => {
+  console.log('MCP extension bridge: page bridge loaded');
   const mcpGlobal = (window as any).mcp as MCPBrowserInterface;
   if (!mcpGlobal || typeof mcpGlobal.connect !== 'function') {
     console.warn('MCP extension bridge: window.mcp not available');
@@ -22,7 +23,7 @@ export default defineUnlistedScript(() => {
     // Assuming e.data has 'source' and the rest matches BridgeMessage structure
     const eventData = e.data as BridgeMessage & { source: 'EXT-CS' };
     const { cmd, clientId, options, message } = eventData;
-
+    console.log('MCP bridge: received', cmd, clientId);
     if (cmd === 'connect') {
       const port = mcpGlobal.connect(clientId, options); // options is already MCPConnectOptions | undefined from BridgeMessage
       if (!port) {

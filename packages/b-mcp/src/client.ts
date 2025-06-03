@@ -152,6 +152,7 @@ export class BrowserClientTransport implements Transport {
    */
   async start(): Promise<void> {
     if (this._abortController) {
+      return
       throw new Error(
         'BrowserClientTransport already started! If using Client class, note that connect() calls start() automatically.'
       );

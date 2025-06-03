@@ -100,6 +100,7 @@ export function createUIBridge(
      * @param options - Configuration options for the MCP server connection
      */
     connect: (clientId: string, options?: MCPConnectOptions) => {
+      console.log({ clientId, options });
       port.postMessage({ cmd: 'connect', clientId, options });
     },
 
@@ -110,6 +111,7 @@ export function createUIBridge(
      * @param message - The JSON-RPC message to send
      */
     send: (clientId: string, message: JSONRPCMessage) => {
+      console.log({ clientId, message });
       port.postMessage({ cmd: 'send', clientId, message });
     },
 

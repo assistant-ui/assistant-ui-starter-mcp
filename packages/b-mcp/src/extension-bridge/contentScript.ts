@@ -1,6 +1,6 @@
 import {
-  type BridgeMessage,
-  type PageBridgeMessageType,
+    type BridgeMessage,
+    type PageBridgeMessageType,
 } from './uiConnector.js';
 
 /**
@@ -19,6 +19,7 @@ export function mcpRelay(port?: chrome.runtime.Port): chrome.runtime.Port {
   // Listen for messages from the injected page bridge (pageBridge.js)
   window.addEventListener('message', (e: MessageEvent) => {
     if (e.source === window && e.data?.source === 'EXT-PAGE') {
+      console.log('MCP relay: received from tab', e.data.cmd, e.data.clientId);
       const { clientId, msg } = e.data as {
         clientId: string;
         msg: PageBridgeMessageType;
@@ -30,6 +31,7 @@ export function mcpRelay(port?: chrome.runtime.Port): chrome.runtime.Port {
   // Relay messages from extension background to page context
   // Forward messages from background script to the page bridge
   csPort.onMessage.addListener((data: BridgeMessage) => {
+    console.log('MCP relay: received from extension', data.cmd, data.clientId);
     window.postMessage({ source: 'EXT-CS', ...data }, '*');
   });
 
