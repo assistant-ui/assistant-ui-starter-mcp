@@ -9,9 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 
 export const Assistant = () => {
-  const runtime = useChatRuntime({
-    api: "/api/chat",
-  });
+  const runtime = useChatRuntime();
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
