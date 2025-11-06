@@ -1,6 +1,6 @@
 import { openai } from "@ai-sdk/openai";
 import { frontendTools } from "@assistant-ui/react-ai-sdk";
-import { convertToModelMessages, streamText } from "ai";
+import { convertToModelMessages, stepCountIs, streamText } from "ai";
 import { experimental_createMCPClient as createMCPClient } from "@ai-sdk/mcp";
 
 export const maxDuration = 30;
@@ -22,6 +22,7 @@ export async function POST(req: Request) {
     model: openai("gpt-4o"),
     messages: convertToModelMessages(messages),
     system,
+    stopWhen: stepCountIs(10),
     tools: {
       ...mcpTools,
       ...frontendTools(tools),
