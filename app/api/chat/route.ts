@@ -1,10 +1,6 @@
 import { openai } from "@ai-sdk/openai";
 import { frontendTools } from "@assistant-ui/react-ai-sdk";
-import {
-  streamText,
-  convertToModelMessages,
-  type UIMessage,
-} from "ai";
+import { streamText, convertToModelMessages, type UIMessage } from "ai";
 import { experimental_createMCPClient as createMCPClient } from "@ai-sdk/mcp";
 
 export const maxDuration = 30;
