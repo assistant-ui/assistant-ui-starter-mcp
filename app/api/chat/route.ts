@@ -6,6 +6,7 @@ import { experimental_createMCPClient as createMCPClient } from "@ai-sdk/mcp";
 export const maxDuration = 30;
 
 const mcpClient = await createMCPClient({
+  // TODO adjust this to point to your MCP server URL
   transport: {
     type: "http",
     url: "http://localhost:8000/mcp",
@@ -28,6 +29,7 @@ export async function POST(req: Request) {
     tools: {
       ...mcpTools,
       ...frontendTools(tools),
+      // add backend tools here
     },
     providerOptions: {
       openai: {
