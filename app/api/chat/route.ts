@@ -1,6 +1,6 @@
 import { openai } from "@ai-sdk/openai";
 import { frontendTools } from "@assistant-ui/react-ai-sdk";
-import { convertToModelMessages, stepCountIs, streamText } from "ai";
+import { streamText, convertToModelMessages, type UIMessage } from "ai";
 import { experimental_createMCPClient as createMCPClient } from "@ai-sdk/mcp";
 
 export const maxDuration = 30;
@@ -16,19 +16,30 @@ const mcpClient = await createMCPClient({
 const mcpTools = await mcpClient.tools();
 
 export async function POST(req: Request) {
-  const { messages, system, tools } = await req.json();
+  const {
+    messages,
+    system,
+    tools,
+  }: { messages: UIMessage[]; system?: string; tools?: any } = await req.json();
 
   const result = streamText({
-    model: openai("gpt-4o"),
+    model: openai.responses("gpt-5-nano"),
     messages: convertToModelMessages(messages),
     system,
-    stopWhen: stepCountIs(10),
     tools: {
       ...mcpTools,
       ...frontendTools(tools),
       // add backend tools here
     },
+    providerOptions: {
+      openai: {
+        reasoningEffort: "low",
+        reasoningSummary: "auto",
+      },
+    },
   });
 
-  return result.toUIMessageStreamResponse();
+  return result.toUIMessageStreamResponse({
+    sendReasoning: true,
+  });
 }
