@@ -20,15 +20,16 @@ export async function POST(req: Request) {
     messages,
     system,
     tools,
-  }: { messages: UIMessage[]; system?: string; tools?: any } = await req.json();
+  }: { messages: UIMessage[]; system?: string; tools?: Record<string, any> } =
+    await req.json();
 
   const result = streamText({
     model: openai.responses("gpt-5-nano"),
-    messages: convertToModelMessages(messages),
+    messages: await convertToModelMessages(messages),
     system,
     tools: {
       ...mcpTools,
-      ...frontendTools(tools),
+      ...frontendTools(tools ?? {}),
       // add backend tools here
     },
     providerOptions: {
