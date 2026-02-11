@@ -24,7 +24,7 @@ export async function POST(req: Request) {
 
   const result = streamText({
     model: openai.responses("gpt-5-nano"),
-    messages: convertToModelMessages(messages),
+    messages: await convertToModelMessages(messages),
     system,
     tools: {
       ...mcpTools,
