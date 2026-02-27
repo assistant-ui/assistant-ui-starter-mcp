@@ -1,6 +1,11 @@
 import { openai } from "@ai-sdk/openai";
 import { frontendTools } from "@assistant-ui/react-ai-sdk";
-import { streamText, convertToModelMessages, type UIMessage } from "ai";
+import {
+  JSONSchema7,
+  streamText,
+  convertToModelMessages,
+  type UIMessage,
+} from "ai";
 import { experimental_createMCPClient as createMCPClient } from "@ai-sdk/mcp";
 
 export const maxDuration = 30;
@@ -20,7 +25,11 @@ export async function POST(req: Request) {
     messages,
     system,
     tools,
-  }: { messages: UIMessage[]; system?: string; tools?: Record<string, any> } =
+  }: {
+    messages: UIMessage[];
+    system?: string;
+    tools?: Record<string, { description?: string; parameters: JSONSchema7 }>;
+  } =
     await req.json();
 
   const result = streamText({
